@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4572E876
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ngit2", "src\ngit2\ngit2.csproj", "{B5E74A8D-22B3-4174-9E06-D1A3B7258618}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.ngit2.test", "tests\xunit.ngit2.test\xunit.ngit2.test.csproj", "{7290B889-4B6F-4A12-8F51-8956A58FFEC2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,11 +39,28 @@ Global
 		{B5E74A8D-22B3-4174-9E06-D1A3B7258618}.Release|x64.Build.0 = Release|Any CPU
 		{B5E74A8D-22B3-4174-9E06-D1A3B7258618}.Release|x86.ActiveCfg = Release|Any CPU
 		{B5E74A8D-22B3-4174-9E06-D1A3B7258618}.Release|x86.Build.0 = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|ARM.Build.0 = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|x64.Build.0 = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Debug|x86.Build.0 = Debug|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|ARM.ActiveCfg = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|ARM.Build.0 = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|x64.ActiveCfg = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|x64.Build.0 = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|x86.ActiveCfg = Release|Any CPU
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B5E74A8D-22B3-4174-9E06-D1A3B7258618} = {AC023BDA-77F3-4295-A3F3-FE937651759B}
+		{7290B889-4B6F-4A12-8F51-8956A58FFEC2} = {4572E876-BE60-4956-A37B-470B439DCCCE}
 	EndGlobalSection
 EndGlobal

@@ -124,13 +124,13 @@ namespace NGit
 		/// </remarks>
 		public static readonly string TYPE_TAG = "tag";
 
-		private static readonly byte[] ENCODED_TYPE_COMMIT = EncodeASCII(TYPE_COMMIT);
+		private static readonly byte[] ENCODED_TYPE_COMMIT = Encoding.ASCII.GetBytes(TYPE_COMMIT);
 
-		private static readonly byte[] ENCODED_TYPE_BLOB = EncodeASCII(TYPE_BLOB);
+		private static readonly byte[] ENCODED_TYPE_BLOB = Encoding.ASCII.GetBytes(TYPE_BLOB);
 
-		private static readonly byte[] ENCODED_TYPE_TREE = EncodeASCII(TYPE_TREE);
+		private static readonly byte[] ENCODED_TYPE_TREE = Encoding.ASCII.GetBytes(TYPE_TREE);
 
-		private static readonly byte[] ENCODED_TYPE_TAG = EncodeASCII(TYPE_TAG);
+		private static readonly byte[] ENCODED_TYPE_TAG = Encoding.ASCII.GetBytes(TYPE_TAG);
 
 		/// <summary>An unknown or invalid object type code.</summary>
 		/// <remarks>An unknown or invalid object type code.</remarks>
@@ -580,48 +580,6 @@ namespace NGit
 			}
 		}
 */
-		/// <summary>Convert an integer into its decimal representation.</summary>
-		/// <remarks>Convert an integer into its decimal representation.</remarks>
-		/// <param name="s">the integer to convert.</param>
-		/// <returns>
-		/// a decimal representation of the input integer. The returned array
-		/// is the smallest array that will hold the value.
-		/// </returns>
-		public static byte[] EncodeASCII(long s)
-		{
-			return EncodeASCII(System.Convert.ToString(s));
-		}
-
-		/// <summary>Convert a string to US-ASCII encoding.</summary>
-		/// <remarks>Convert a string to US-ASCII encoding.</remarks>
-		/// <param name="s">
-		/// the string to convert. Must not contain any characters over
-		/// 127 (outside of 7-bit ASCII).
-		/// </param>
-		/// <returns>
-		/// a byte array of the same length as the input string, holding the
-		/// same characters, in the same order.
-		/// </returns>
-		/// <exception cref="System.ArgumentException">
-		/// the input string contains one or more characters outside of
-		/// the 7-bit ASCII character space.
-		/// </exception>
-		public static byte[] EncodeASCII(string s)
-		{
-			byte[] r = new byte[s.Length];
-			for (int k = r.Length - 1; k >= 0; k--)
-			{
-				char c = s[k];
-				if (c > 127)
-				{
-					throw new ArgumentException(MessageFormat.Format(JGitText.Get().notASCIIString, s
-						));
-				}
-				r[k] = unchecked((byte)c);
-			}
-			return r;
-		}
-
 		static Constants()
 		{
 			//if (OBJECT_ID_LENGTH != NewMessageDigest().GetDigestLength())

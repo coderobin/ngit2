@@ -42,295 +42,185 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System.IO;
+using System.Linq;
 using NGit.Util.IO;
+using NSubstitute;
 using Xunit;
 
 namespace NGit.Util.IO
 {
-	public class UnionInputStreamTest
-	{
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestEmptyStream()
-		{
-			UnionInputStream u = new UnionInputStream();
-			Assert.True(u.IsEmpty());
-			Assert.Equal<int>(-1, u.ReadByte());
-			Assert.Equal<int>(-1, u.Read(new byte[1], 0, 1));
-			Assert.Equal<int>(0, u.Available());
-			Assert.Equal<int>(0, u.Skip(1));
-			u.Dispose();
-		}
+    public class UnionInputStreamTest
+    {
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestEmptyStream()
+        {
+            UnionInputStream u = new UnionInputStream();
+            Assert.True(u.IsEmpty());
+            Assert.Equal<int>(-1, u.ReadByte());
+            Assert.Equal<int>(-1, u.Read(new byte[1], 0, 1));
+            Assert.Equal<int>(-1, u.Read(new byte[1], 0, 0));
+            u.Dispose();
+        }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestReadSingleBytes()
-		{
-			UnionInputStream u = new UnionInputStream();
-			Assert.True(u.IsEmpty());
-			u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
-			u.Add(new MemoryStream(new byte[] { 3 }));
-			u.Add(new MemoryStream(new byte[] { 4, 5 }));
-			Assert.False(u.IsEmpty());
-			Assert.Equal<int>(3, u.Available());
-			Assert.Equal<int>(1, u.ReadByte());
-			Assert.Equal<int>(0, u.ReadByte());
-			Assert.Equal<int>(2, u.ReadByte());
-			Assert.Equal<int>(0, u.Available());
-			Assert.Equal<int>(3, u.ReadByte());
-			Assert.Equal<int>(0, u.Available());
-			Assert.Equal<int>(4, u.ReadByte());
-			Assert.Equal<int>(1, u.Available());
-			Assert.Equal<int>(5, u.ReadByte());
-			Assert.Equal<int>(0, u.Available());
-			Assert.Equal<int>(-1, u.ReadByte());
-			Assert.True(u.IsEmpty());
-			u.Add(new MemoryStream(new byte[] { 255 }));
-			Assert.Equal<int>(255, u.ReadByte());
-			Assert.Equal<int>(-1, u.ReadByte());
-			Assert.True(u.IsEmpty());
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestReadSingleBytes()
+        {
+            UnionInputStream u = new UnionInputStream();
+            Assert.True(u.IsEmpty());
+            u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
+            u.Add(new MemoryStream(new byte[] { 3 }));
+            u.Add(new MemoryStream(new byte[] { 4, 5 }));
+            Assert.False(u.IsEmpty());
+            Assert.Equal<int>(1, u.ReadByte());
+            Assert.Equal<int>(0, u.ReadByte());
+            Assert.Equal<int>(2, u.ReadByte());
+            Assert.Equal<int>(3, u.ReadByte());
+            Assert.Equal<int>(4, u.ReadByte());
+            Assert.Equal<int>(5, u.ReadByte());
+            Assert.Equal<int>(-1, u.ReadByte());
+            Assert.True(u.IsEmpty());
+            u.Add(new MemoryStream(new byte[] { 255 }));
+            Assert.Equal<int>(255, u.ReadByte());
+            Assert.Equal<int>(-1, u.ReadByte());
+            Assert.True(u.IsEmpty());
+        }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestReadByteBlocks()
-		{
-			UnionInputStream u = new UnionInputStream();
-			u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
-			u.Add(new MemoryStream(new byte[] { 3 }));
-			u.Add(new MemoryStream(new byte[] { 4, 5 }));
-			byte[] r = new byte[5];
-			Assert.Equal<int>(3, u.Read(r, 0, 5));
-			Assert.True(Arrays.Equals(new byte[] { 1, 0, 2 }, Slice(r, 3)));
-			Assert.Equal<int>(1, u.Read(r, 0, 5));
-			Assert.Equal<int>(3, r[0]);
-			Assert.Equal<int>(2, u.Read(r, 0, 5));
-			Assert.True(Arrays.Equals(new byte[] { 4, 5 }, Slice(r, 2)));
-			Assert.Equal<int>(-1, u.Read(r, 0, 5));
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestReadByteBlocks()
+        {
+            UnionInputStream u = new UnionInputStream();
+            u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
+            u.Add(new MemoryStream(new byte[] { 3 }));
+            u.Add(new MemoryStream(new byte[] { 4, 5 }));
+            byte[] r = new byte[5];
+            Assert.Equal<int>(3, u.Read(r, 0, 5));
+            Assert.True((new byte[] { 1, 0, 2 }).SequenceEqual(r.Take(3)));
+            Assert.Equal<int>(1, u.Read(r, 0, 5));
+            Assert.Equal<int>(3, r[0]);
+            Assert.Equal<int>(2, u.Read(r, 0, 5));
+            Assert.True((new byte[] { 4, 5 }).SequenceEqual(r.Take(2)));
+            Assert.Equal<int>(-1, u.Read(r, 0, 5));
+        }
 
-		private static byte[] Slice(byte[] @in, int len)
-		{
-			byte[] r = new byte[len];
-			System.Array.Copy(@in, 0, r, 0, len);
-			return r;
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestArrayConstructor()
+        {
+            UnionInputStream u = new UnionInputStream(new MemoryStream(new byte[] { 1
+                , 0, 2 }), new MemoryStream(new byte[] { 3 }), new MemoryStream(
+                new byte[] { 4, 5 }));
+            byte[] r = new byte[5];
+            Assert.Equal<int>(3, u.Read(r, 0, 5));
+            Assert.True((new byte[] { 1, 0, 2 }).SequenceEqual(r.Take(3)));
+            Assert.Equal<int>(1, u.Read(r, 0, 5));
+            Assert.Equal<int>(3, r[0]);
+            Assert.Equal<int>(2, u.Read(r, 0, 5));
+            Assert.True((new byte[] { 4, 5 }).SequenceEqual(r.Take(2)));
+            Assert.Equal<int>(-1, u.Read(r, 0, 5));
+        }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestArrayConstructor()
-		{
-			UnionInputStream u = new UnionInputStream(new MemoryStream(new byte[] { 1
-				, 0, 2 }), new MemoryStream(new byte[] { 3 }), new MemoryStream(
-				new byte[] { 4, 5 }));
-			byte[] r = new byte[5];
-			Assert.Equal<int>(3, u.Read(r, 0, 5));
-			Assert.True(Arrays.Equals(new byte[] { 1, 0, 2 }, Slice(r, 3)));
-			Assert.Equal<int>(1, u.Read(r, 0, 5));
-			Assert.Equal<int>(3, r[0]);
-			Assert.Equal<int>(2, u.Read(r, 0, 5));
-			Assert.True(Arrays.Equals(new byte[] { 4, 5 }, Slice(r, 2)));
-			Assert.Equal<int>(-1, u.Read(r, 0, 5));
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestAutoDisposeDuringRead()
+        {
+            UnionInputStream u = new UnionInputStream();
+            bool[] closed = new bool[2];
+            var ms1 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 1 });
+            var ms2 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 2 });
+            u.Add(ms1);
+            u.Add(ms2);
+            ms1.DidNotReceive().Dispose();
+            ms2.DidNotReceive().Dispose();
+            Assert.Equal<int>(1, u.ReadByte());
+            ms1.DidNotReceive().Dispose();
+            ms2.DidNotReceive().Dispose();
+            Assert.Equal<int>(2, u.ReadByte());
+            ms1.Received().Dispose();
+            ms2.DidNotReceive().Dispose();
+            Assert.Equal<int>(-1, u.ReadByte());
+            ms1.Received().Dispose();
+            ms2.Received().Dispose();
+        }
 
-		[Fact]
-		public virtual void TestMarkSupported()
-		{
-			UnionInputStream u = new UnionInputStream();
-			Assert.False(u.MarkSupported());
-			u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
-			Assert.False(u.MarkSupported());
-		}
 
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestSkip()
-		{
-			UnionInputStream u = new UnionInputStream();
-			u.Add(new MemoryStream(new byte[] { 1, 0, 2 }));
-			u.Add(new MemoryStream(new byte[] { 3 }));
-			u.Add(new MemoryStream(new byte[] { 4, 5 }));
-			Assert.Equal<int>(0, u.Skip(0));
-			Assert.Equal<int>(3, u.Skip(3));
-			Assert.Equal<int>(3, u.ReadByte());
-			Assert.Equal<int>(2, u.Skip(5));
-			Assert.Equal<int>(0, u.Skip(5));
-			Assert.Equal<int>(-1, u.ReadByte());
-			u.Add(new _MemoryStream_168(new byte[] { 20, 30 }));
-			Assert.Equal<int>(2, u.Skip(8));
-			Assert.Equal<int>(-1, u.ReadByte());
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestCloseDuringClose()
+        {
+            UnionInputStream u = new UnionInputStream();
+            var ms1 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 1 });
+            var ms2 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 2 });
+            u.Add(ms1);
+            u.Add(ms2);
+            ms1.DidNotReceive().Dispose();
+            ms2.DidNotReceive().Dispose();
+            u.Close();
+            ms1.Received().Dispose();
+            ms2.Received().Dispose();
+        }
 
-		private sealed class _MemoryStream_168 : MemoryStream
-		{
-			public _MemoryStream_168(byte[] baseArg1) : base(baseArg1)
-			{
-			}
+        /// <exception cref="System.IO.IOException"></exception>
+        [Fact]
+        public virtual void TestCloseDuringClose2()
+        {
+            UnionInputStream u = new UnionInputStream();
+            var ms1 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 1 });
+            var ms2 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 2 });
+            u.Add(ms1);
+            u.Add(ms2);
+            ms1.DidNotReceive().Dispose();
+            ms2.DidNotReceive().Dispose();
+            Assert.Equal<int>(1, u.ReadByte()); // we consume one
+            u.Close();
+            ms1.Received().Dispose();
+            ms2.Received().Dispose();
+        }
 
-			public override long Skip(long n)
-			{
-				return 0;
-			}
-		}
+        [Fact]
+        public virtual void TestExceptionDuringClose()
+        {
+            UnionInputStream u = new UnionInputStream();
+            var ms1 = Substitute.ForPartsOf<MemoryStream>(new byte[] { 1 });
+            ms1.When(x => x.Dispose()).Throw(new IOException("I AM A TEST"));
+            u.Add(ms1);
 
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestAutoCloseDuringRead()
-		{
-			UnionInputStream u = new UnionInputStream();
-			bool[] closed = new bool[2];
-			u.Add(new _MemoryStream_182(closed, new byte[] { 1 }));
-			u.Add(new _MemoryStream_187(closed, new byte[] { 2 }));
-			Assert.False(closed[0]);
-			Assert.False(closed[1]);
-			Assert.Equal<int>(1, u.ReadByte());
-			Assert.False(closed[0]);
-			Assert.False(closed[1]);
-			Assert.Equal<int>(2, u.ReadByte());
-			Assert.True(closed[0]);
-			Assert.False(closed[1]);
-			Assert.Equal<int>(-1, u.ReadByte());
-			Assert.True(closed[0]);
-			Assert.True(closed[1]);
-		}
+            try
+            {
+                u.Close();
+                throw new System.Exception("close ignored inner stream exception");
+            }
+            catch (IOException e)
+            {
+                Assert.Equal<string>("I AM A TEST", e.Message);
+            }
+        }
 
-		private sealed class _MemoryStream_182 : MemoryStream
-		{
-			public _MemoryStream_182(bool[] closed, byte[] baseArg1) : base(baseArg1)
-			{
-				this.closed = closed;
-			}
 
-			public override void Close()
-			{
-				closed[0] = true;
-			}
+        /// <exception cref="System.Exception"></exception>
+        [Fact]
+        public virtual void TestNonBlockingPartialRead()
+        {
+            byte[] buf = new byte[10];
+            var ms1 = Substitute.ForPartsOf<MemoryStream>();
+            ms1.When(x => x.Read(buf, 0, 1)).Throw(new IOException("Expected"));
 
-			private readonly bool[] closed;
-		}
+            UnionInputStream u = new UnionInputStream(new MemoryStream(new byte[] { 1
+                        , 2, 3 }), ms1);
 
-		private sealed class _MemoryStream_187 : MemoryStream
-		{
-			public _MemoryStream_187(bool[] closed, byte[] baseArg1) : base(baseArg1)
-			{
-				this.closed = closed;
-			}
-
-			public override void Close()
-			{
-				closed[1] = true;
-			}
-
-			private readonly bool[] closed;
-		}
-
-		/// <exception cref="System.IO.IOException"></exception>
-		[Fact]
-		public virtual void TestCloseDuringClose()
-		{
-			UnionInputStream u = new UnionInputStream();
-			bool[] closed = new bool[2];
-			u.Add(new _MemoryStream_213(closed, new byte[] { 1 }));
-			u.Add(new _MemoryStream_218(closed, new byte[] { 2 }));
-			Assert.False(closed[0]);
-			Assert.False(closed[1]);
-			u.Close();
-			Assert.True(closed[0]);
-			Assert.True(closed[1]);
-		}
-
-		private sealed class _MemoryStream_213 : MemoryStream
-		{
-			public _MemoryStream_213(bool[] closed, byte[] baseArg1) : base(baseArg1)
-			{
-				this.closed = closed;
-			}
-
-			public override void Close()
-			{
-				closed[0] = true;
-			}
-
-			private readonly bool[] closed;
-		}
-
-		private sealed class _MemoryStream_218 : MemoryStream
-		{
-			public _MemoryStream_218(bool[] closed, byte[] baseArg1) : base(baseArg1)
-			{
-				this.closed = closed;
-			}
-
-			public override void Close()
-			{
-				closed[1] = true;
-			}
-
-			private readonly bool[] closed;
-		}
-
-		[Fact]
-		public virtual void TestExceptionDuringClose()
-		{
-			UnionInputStream u = new UnionInputStream();
-			u.Add(new _MemoryStream_236(new byte[] { 1 }));
-			try
-			{
-				u.Close();
-				Assert.Fail("close ignored inner stream exception");
-			}
-			catch (IOException e)
-			{
-				Assert.Equal<string>("I AM A TEST", e.Message);
-			}
-		}
-
-		private sealed class _MemoryStream_236 : MemoryStream
-		{
-			public _MemoryStream_236(byte[] baseArg1) : base(baseArg1)
-			{
-			}
-
-			/// <exception cref="System.IO.IOException"></exception>
-			public override void Close()
-			{
-				throw new IOException("I AM A TEST");
-			}
-		}
-
-		/// <exception cref="System.Exception"></exception>
-		[Fact]
-		public virtual void TestNonBlockingPartialRead()
-		{
-			Stream errorReadStream = new _InputStream_251();
-			UnionInputStream u = new UnionInputStream(new MemoryStream(new byte[] { 1
-				, 2, 3 }), errorReadStream);
-			byte[] buf = new byte[10];
-			Assert.Equal<int>(3, u.Read(buf, 0, 10));
-			Assert.True(Arrays.Equals(new byte[] { 1, 2, 3 }, Slice(buf, 3)
-				));
-			try
-			{
-				u.Read(buf, 0, 1);
-				Assert.Fail("Expected exception from errorReadStream");
-			}
-			catch (IOException e)
-			{
-				Assert.Equal<string>("Expected", e.Message);
-			}
-		}
-
-		private sealed class _InputStream_251 : Stream
-		{
-			public _InputStream_251()
-			{
-			}
-
-			/// <exception cref="System.IO.IOException"></exception>
-			public override int Read()
-			{
-				throw new IOException("Expected");
-			}
-		}
-	}
+            Assert.Equal<int>(3, u.Read(buf, 0, 10));
+            Assert.True((new byte[] { 1, 2, 3 }).SequenceEqual(buf.Take(3)));
+            try
+            {
+                u.Read(buf, 0, 1);
+                throw new System.Exception("Expected exception from errorReadStream");
+            }
+            catch (IOException e)
+            {
+                Assert.Equal<string>("Expected", e.Message);
+            }
+        }
+    }
 }

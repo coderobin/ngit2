@@ -47,25 +47,24 @@ using System.IO;
 
 namespace NGit.Util.IO
 {
-	/// <summary>An InputStream which reads from one or more InputStreams.</summary>
-	/// <remarks>
-	/// An InputStream which reads from one or more InputStreams.
-	/// <p>
-	/// This stream may enter into an EOF state, returning -1 from any of the read
-	/// methods, and then later successfully read additional bytes if a new
-	/// InputStream is added after reaching EOF.
-	/// <p>
-	/// Currently this stream does not support the mark/reset APIs. If mark and later
-	/// reset functionality is needed the caller should wrap this stream with a
-	/// <see cref="Sharpen.BufferedInputStream">Sharpen.BufferedInputStream</see>
-	/// .
-	/// </remarks>
-	public class UnionInputStream : Stream
-	{
-        // This will always return -1 for EOF.ReadByte() as the size is 0
-		private static readonly Stream EOF = new MemoryStream(0);
+    /// <summary>An InputStream which reads from one or more InputStreams.</summary>
+    /// <remarks>
+    /// An InputStream which reads from one or more InputStreams.
+    /// <p>
+    /// This stream may enter into an EOF state, returning -1 from any of the read
+    /// methods, and then later successfully read additional bytes if a new
+    /// InputStream is added after reaching EOF.
+    /// <p>
+    /// Currently this stream does not support the mark/reset APIs. If mark and later
+    /// reset functionality is needed the caller should wrap this stream with a
+    /// <see cref="Sharpen.BufferedInputStream">Sharpen.BufferedInputStream</see>
+    /// .
+    /// </remarks>
+    public class UnionInputStream : Stream
+    {
+        private readonly Queue<Stream> streams = new Queue<Stream>();
 
-		private readonly Queue<Stream> streams = new Queue<Stream>();
+        private Stream currentStream;
 
         public override bool CanRead
         {
@@ -115,176 +114,137 @@ namespace NGit.Util.IO
         /// <summary>Create an empty InputStream that is currently at EOF state.</summary>
         /// <remarks>Create an empty InputStream that is currently at EOF state.</remarks>
         public UnionInputStream()
-		{
-		}
+        {
+        }
 
-		/// <summary>Create an InputStream that is a union of the individual streams.</summary>
-		/// <remarks>
-		/// Create an InputStream that is a union of the individual streams.
-		/// <p>
-		/// As each stream reaches EOF, it will be automatically closed before bytes
-		/// from the next stream are read.
-		/// </remarks>
-		/// <param name="inputStreams">streams to be pushed onto this stream.</param>
-		public UnionInputStream(params Stream[] inputStreams)
-		{
-			foreach (Stream s in inputStreams)
-			{
+        /// <summary>Create an InputStream that is a union of the individual streams.</summary>
+        /// <remarks>
+        /// Create an InputStream that is a union of the individual streams.
+        /// <p>
+        /// As each stream reaches EOF, it will be automatically closed before bytes
+        /// from the next stream are read.
+        /// </remarks>
+        /// <param name="inputStreams">streams to be pushed onto this stream.</param>
+        public UnionInputStream(params Stream[] inputStreams)
+        {
+            foreach (Stream s in inputStreams)
+            {
                 streams.Enqueue(s);
-			}
-		}
+            }
+        }
 
-		private Stream Head()
-		{
-			return streams.Count == 0 ? EOF : streams.Dequeue();
-		}
+        /// <summary>Add the given InputStream onto the end of the stream queue.</summary>
+        /// <remarks>
+        /// Add the given InputStream onto the end of the stream queue.
+        /// <p>
+        /// When the stream reaches EOF it will be automatically closed.
+        /// </remarks>
+        /// <param name="in">the stream to add; must not be null.</param>
+        public virtual void Add(Stream @in)
+        {
+            streams.Enqueue(@in);
+        }
 
-		/// <summary>Add the given InputStream onto the end of the stream queue.</summary>
-		/// <remarks>
-		/// Add the given InputStream onto the end of the stream queue.
-		/// <p>
-		/// When the stream reaches EOF it will be automatically closed.
-		/// </remarks>
-		/// <param name="in">the stream to add; must not be null.</param>
-		public virtual void Add(Stream @in)
-		{
-			streams.Enqueue(@in);
-		}
+        /// <summary>Returns true if there are no more InputStreams in the stream queue.</summary>
+        /// <remarks>
+        /// Returns true if there are no more InputStreams in the stream queue.
+        /// <p>
+        /// If this method returns
+        /// <code>true</code>
+        /// then all read methods will signal EOF
+        /// by returning -1, until another InputStream has been pushed into the queue
+        /// with
+        /// <see cref="Add(Sharpen.InputStream)">Add(Sharpen.InputStream)</see>
+        /// .
+        /// </remarks>
+        /// <returns>true if there are no more streams to read from.</returns>
+        public virtual bool IsEmpty()
+        {
+            return streams.Count == 0;
+        }
 
-		/// <summary>Returns true if there are no more InputStreams in the stream queue.</summary>
-		/// <remarks>
-		/// Returns true if there are no more InputStreams in the stream queue.
-		/// <p>
-		/// If this method returns
-		/// <code>true</code>
-		/// then all read methods will signal EOF
-		/// by returning -1, until another InputStream has been pushed into the queue
-		/// with
-		/// <see cref="Add(Sharpen.InputStream)">Add(Sharpen.InputStream)</see>
-		/// .
-		/// </remarks>
-		/// <returns>true if there are no more streams to read from.</returns>
-		public virtual bool IsEmpty()
-		{
-			return streams.Count == 0;
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        public override int ReadByte()
+        {
+            if (currentStream == null)
+            {
+                if (streams.Count > 0)
+                    currentStream = streams.Dequeue();
+                else
+                    return -1;
+            }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		public override int ReadByte()
-		{
-			for (; ; )
-			{
-				Stream @in = Head();
-				int r = @in.ReadByte();
-				if (0 <= r)
-				{
-					return r;
-				}
-				else
-				{
-					if (@in == EOF)
-					{
-						return -1;
-					}
-					else
-					{
-					}
-				}
-			}
-		}
+            do
+            {
+                int r = currentStream.ReadByte();
+                if (r >= 0)
+                {
+                    return r;
+                }
+                else
+                {
+                    currentStream.Dispose();
+                    currentStream = null;
 
-		/// <exception cref="System.IO.IOException"></exception>
-		public override int Read(byte[] b, int off, int len)
-		{
-			if (len == 0)
-			{
-				return 0;
-			}
-			for (; ; )
-			{
-				Stream @in = Head();
-				int n = @in.Read(b, off, len);
-				if (0 < n)
-				{
-					return n;
-				}
-				else
-				{
-					if (@in == EOF)
-					{
-						return -1;
-					}
-					else
-					{
-					}
-				}
-			}
-		}
+                    if (streams.Count == 0)
+                        return -1;
+                    else
+                    {
+                        currentStream = streams.Dequeue();
+                        continue;
+                    }
+                }
+            } while (true);
+        }
 
-		/// <exception cref="System.IO.IOException"></exception>
-		public long Skip(long len)
-		{
-			long cnt = 0;
-			while (0 < len)
-			{
-				Stream @in = Head();
-				long n = @in.Skip(len);
-				if (0 < n)
-				{
-					cnt += n;
-					len -= n;
-				}
-				else
-				{
-					if (@in == EOF)
-					{
-						return cnt;
-					}
-					else
-					{
-						// Is this stream at EOF? We can't tell from skip alone.
-						// Read one byte to test for EOF, discard it if we aren't
-						// yet at EOF.
-						//
-						int r = @in.ReadByte();
-						if (r < 0)
-						{
-							if (0 < cnt)
-							{
-								break;
-							}
-						}
-						else
-						{
-							cnt += 1;
-							len -= 1;
-						}
-					}
-				}
-			}
-			return cnt;
-		}
 
-		/// <exception cref="System.IO.IOException"></exception>
-		protected override void Dispose(bool disposing)
-		{
-			IOException err = null;
-			foreach(var s in streams)
-			{
-				try
-				{
-					s.Dispose();
-				}
-				catch (IOException closeError)
-				{
-					err = closeError;
-				}
-			}
-			if (err != null)
-			{
-				throw err;
-			}
-		}
+        /// <exception cref="System.IO.IOException"></exception>
+        public override int Read(byte[] b, int off, int len)
+        {
+            if (currentStream == null)
+            {
+                if (streams.Count > 0)
+                    currentStream = streams.Dequeue();
+                else
+                    return -1;
+            }
+
+            do
+            {
+                int n = currentStream.Read(b, off, len);
+                if (n > 0)
+                {
+                    return n;
+                }
+                else
+                {
+                    currentStream.Dispose();
+                    currentStream = null;
+
+                    if (streams.Count == 0)
+                        return -1;
+                    else
+                    {
+                        currentStream = streams.Dequeue();
+                        continue;
+                    }
+                }
+            } while (true);
+        }
+
+        /// <exception cref="System.IO.IOException"></exception>
+        protected override void Dispose(bool disposing)
+        {
+            // if called before exhausted
+            foreach(var s in streams)
+            {
+                if (s != null)
+                    s.Dispose();
+            }
+
+            if (currentStream != null)
+                currentStream.Dispose();
+        }
 
         public override void Flush()
         {
