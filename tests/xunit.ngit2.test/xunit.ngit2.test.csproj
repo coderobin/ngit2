@@ -68,7 +68,9 @@
     <Compile Include="NGit.Util.IO\EolCanonicalizingInputStreamTest.cs" />
     <Compile Include="NGit.Util.IO\UnionInputStreamTest.cs" />
     <Compile Include="NGit\AbbreviatedObjectIdTest.cs" />
+    <Compile Include="NGit\FileModeTest.cs" />
     <Compile Include="NGit\ObjectIdTest.cs" />
+    <Compile Include="NGit\ObjectLoaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

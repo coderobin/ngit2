@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="ObjectIdFamily.cd" />
     <None Include="project.json" />
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
@@ -52,8 +53,12 @@
     <Compile Include="NGit\AbbreviatedObjectId.cs" />
     <Compile Include="NGit\AnyObjectId.cs" />
     <Compile Include="NGit\Constants.cs" />
+    <Compile Include="NGit\FileMode.cs" />
     <Compile Include="NGit\MessageFormat.cs" />
+    <Compile Include="NGit\MutableObjectId.cs" />
     <Compile Include="NGit\ObjectId.cs" />
+    <Compile Include="NGit\ObjectLoader.cs" />
+    <Compile Include="NGit\ObjectStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

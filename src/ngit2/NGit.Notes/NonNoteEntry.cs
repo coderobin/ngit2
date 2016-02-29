@@ -42,13 +42,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using NGit;
-using Sharpen;
 
 namespace NGit.Notes
 {
 	/// <summary>A tree entry found in a note branch that isn't a valid note.</summary>
 	/// <remarks>A tree entry found in a note branch that isn't a valid note.</remarks>
-	[System.Serializable]
+	[System.Runtime.Serialization.DataContract]
 	internal class NonNoteEntry : ObjectId
 	{
 		/// <summary>Name of the entry in the tree, in raw format.</summary>
@@ -90,8 +89,7 @@ namespace NGit.Notes
 		{
 			while (aPos < aEnd && bPos < bEnd)
 			{
-				int cmp = (aBuf[aPos++] & unchecked((int)(0xff))) - (bBuf[bPos++] & unchecked((int
-					)(0xff)));
+				int cmp = (aBuf[aPos++] & 0xff) - (bBuf[bPos++] & 0xff);
 				if (cmp != 0)
 				{
 					return cmp;
@@ -99,11 +97,11 @@ namespace NGit.Notes
 			}
 			if (aPos < aEnd)
 			{
-				return (aBuf[aPos] & unchecked((int)(0xff))) - LastPathChar(bMode);
+				return (aBuf[aPos] & 0xff) - LastPathChar(bMode);
 			}
 			if (bPos < bEnd)
 			{
-				return LastPathChar(aMode) - (bBuf[bPos] & unchecked((int)(0xff)));
+				return LastPathChar(aMode) - (bBuf[bPos] & 0xff);
 			}
 			return 0;
 		}

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="NGit.AbbreviatedObjectId">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAgAQAEkEAAAARFAAAAAIABABgAAAAAAAA=</HashCode>
+      <FileName>NGit\AbbreviatedObjectId.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NGit.AnyObjectId">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAgAAQEgAAAABQBAgAAAIABAAAAAAAApEA=</HashCode>
+      <FileName>NGit\AnyObjectId.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="NGit.MutableObjectId">
+    <Position X="0.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAEAAAAAAAAAAAAAABABAAAABABAA=</HashCode>
+      <FileName>NGit\MutableObjectId.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NGit.ObjectId">
+    <Position X="2.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAACACAQAEkAAAAAAEAAAAAAAhAAAAAAAAAAA=</HashCode>
+      <FileName>NGit\ObjectId.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NGit.Notes.Note">
+    <Position X="5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABEAAAAAAEAAAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>NGit.Notes\Note.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

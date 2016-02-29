@@ -54,9 +54,13 @@ namespace NGit
 	/// <remarks>Misc. constants used throughout JGit.</remarks>
 	public sealed class Constants
 	{
-		/// <summary>Hash function used natively by Git for all objects.</summary>
-		/// <remarks>Hash function used natively by Git for all objects.</remarks>
-		private static readonly string HASH_FUNCTION = "SHA-1";
+        /// <summary>Mask to apply to a file mode to obtain its type bits.</summary>
+		/// <remarks>Mask to apply to a file mode to obtain its type bits.</remarks>
+        public const int FILEMODE_TYPE_MASK = 0xf000;
+
+        /// <summary>Hash function used natively by Git for all objects.</summary>
+        /// <remarks>Hash function used natively by Git for all objects.</remarks>
+        private static readonly string HASH_FUNCTION = "SHA-1";
 
 		/// <summary>A Git object hash is 160 bits, i.e.</summary>
 		/// <remarks>

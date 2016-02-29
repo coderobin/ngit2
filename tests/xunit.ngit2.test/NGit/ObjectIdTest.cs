@@ -41,6 +41,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System.Text;
 using NGit;
 using Xunit;
 
@@ -131,53 +132,62 @@ namespace NGit
 			Assert.Equal<string>(x.ToLower(), oid.Name);
 		}
 
-		//[Fact]
-		//public virtual void TestGetByte()
-		//{
-		//	byte[] raw = new byte[20];
-		//	for (int i = 0; i < 20; i++)
-		//	{
-		//		raw[i] = unchecked((byte)(unchecked((int)(0xa0)) + i));
-		//	}
-		//	ObjectId id = ObjectId.FromRaw(raw);
-		//	Assert.Equal<int>(raw[0] & unchecked((int)(0xff)), id.FirstByte);
-		//	Assert.Equal<int>(raw[0] & unchecked((int)(0xff)), id.GetByte(0));
-		//	Assert.Equal<int>(raw[1] & unchecked((int)(0xff)), id.GetByte(1));
-		//	for (int i_1 = 2; i_1 < 20; i_1++)
-		//	{
-		//		Assert.Equal<byte>(raw[i_1] & unchecked((int)(0xff)), id.GetByte(i_1));
-		//	}
-		//}
+        [Fact]
+        public virtual void Test012_toString()
+        {
+            string x = "ff00eedd003713bb1bb26b808ec9312548e73946";
+            byte[] bs = Encoding.ASCII.GetBytes(x);
+            ObjectId oid = ObjectId.FromString(bs, 0);
+            Assert.Equal<string>(x, ObjectId.ToString(oid));
+        }
 
-		//[Fact]
-		//public virtual void TestSetByte()
-		//{
-		//	byte[] exp = new byte[20];
-		//	for (int i = 0; i < 20; i++)
-		//	{
-		//		exp[i] = unchecked((byte)(unchecked((int)(0xa0)) + i));
-		//	}
-		//	MutableObjectId id = new MutableObjectId();
-		//	id.FromRaw(exp);
-		//	Assert.Equal<int>(ObjectId.FromRaw(exp).Name, id.Name);
-		//	id.SetByte(0, unchecked((int)(0x10)));
-		//	Assert.Equal<int>(unchecked((int)(0x10)), id.GetByte(0));
-		//	exp[0] = unchecked((int)(0x10));
-		//	Assert.Equal<int>(ObjectId.FromRaw(exp).Name, id.Name);
-		//	for (int p = 1; p < 20; p++)
-		//	{
-		//		id.SetByte(p, unchecked((int)(0x10)) + p);
-		//		Assert.Equal<int>(unchecked((int)(0x10)) + p, id.GetByte(p));
-		//		exp[p] = unchecked((byte)(unchecked((int)(0x10)) + p));
-		//		Assert.Equal<int>(ObjectId.FromRaw(exp).Name, id.Name);
-		//	}
-		//	for (int p_1 = 0; p_1 < 20; p_1++)
-		//	{
-		//		id.SetByte(p_1, unchecked((int)(0x80)) + p_1);
-		//		Assert.Equal<int>(unchecked((int)(0x80)) + p_1, id.GetByte(p_1));
-		//		exp[p_1] = unchecked((byte)(unchecked((int)(0x80)) + p_1));
-		//		Assert.Equal<int>(ObjectId.FromRaw(exp).Name, id.Name);
-		//	}
-		//}
-	}
+        [Fact]
+        public virtual void TestGetByte()
+        {
+            byte[] raw = new byte[20];
+            for (int i = 0; i < 20; i++)
+            {
+                raw[i] = (byte)(0xa0 + i);
+            }
+            ObjectId id = ObjectId.FromRaw(raw);
+            Assert.Equal<int>(raw[0] & 0xff, id.FirstByte);
+            Assert.Equal<int>(raw[0] & 0xff, id.GetByte(0));
+            Assert.Equal<int>(raw[1] & 0xff, id.GetByte(1));
+            for (int i_1 = 2; i_1 < 20; i_1++)
+            {
+                Assert.Equal<int>(raw[i_1] & 0xff, id.GetByte(i_1));
+            }
+        }
+
+        [Fact]
+        public virtual void TestSetByte()
+        {
+            byte[] exp = new byte[20];
+            for (int i = 0; i < 20; i++)
+            {
+                exp[i] = (byte)(0xa0 + i);
+            }
+            MutableObjectId id = new MutableObjectId();
+            id.FromRaw(exp);
+            Assert.Equal<string>(ObjectId.FromRaw(exp).Name, id.Name);
+            id.SetByte(0, 0x10);
+            Assert.Equal<int>(0x10, id.GetByte(0));
+            exp[0] = 0x10;
+            Assert.Equal<string>(ObjectId.FromRaw(exp).Name, id.Name);
+            for (int p = 1; p < 20; p++)
+            {
+                id.SetByte(p, (byte)(0x10 + p));
+                Assert.Equal<int>(0x10 + p, id.GetByte(p));
+                exp[p] = (byte)(0x10 + p);
+                Assert.Equal<string>(ObjectId.FromRaw(exp).Name, id.Name);
+            }
+            for (int p_1 = 0; p_1 < 20; p_1++)
+            {
+                id.SetByte(p_1, (byte)(0x80 + p_1));
+                Assert.Equal<int>(0x80 + p_1, id.GetByte(p_1));
+                exp[p_1] = (byte)(0x80 + p_1);
+                Assert.Equal<string>(ObjectId.FromRaw(exp).Name, id.Name);
+            }
+        }
+    }
 }

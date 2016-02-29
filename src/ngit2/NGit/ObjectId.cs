@@ -43,6 +43,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 using System.Linq;
+using System.Text;
 using NGit;
 // using NGit.Errors;
 using NGit.Util;
@@ -155,10 +156,10 @@ namespace NGit
         /// available within this byte array.
         /// </param>
         /// <returns>the converted object id.</returns>
-        //public static NGit.ObjectId FromRaw(byte[] bs)
-        //{
-        //	return FromRaw(bs, 0);
-        //}
+        public static NGit.ObjectId FromRaw(byte[] bs)
+        {
+            return FromRaw(bs, 0);
+        }
 
         /// <summary>Convert an ObjectId from raw binary representation.</summary>
         /// <remarks>Convert an ObjectId from raw binary representation.</remarks>
@@ -168,40 +169,15 @@ namespace NGit
         /// </param>
         /// <param name="p">position to read the first byte of data from.</param>
         /// <returns>the converted object id.</returns>
-        //public static NGit.ObjectId FromRaw(byte[] bs, int p)
-        //{
-        //	int a = NB.DecodeInt32(bs, p);
-        //	int b = NB.DecodeInt32(bs, p + 4);
-        //	int c = NB.DecodeInt32(bs, p + 8);
-        //	int d = NB.DecodeInt32(bs, p + 12);
-        //	int e = NB.DecodeInt32(bs, p + 16);
-        //	return new NGit.ObjectId(a, b, c, d, e);
-        //}
+        public static NGit.ObjectId FromRaw(byte[] bs, int p)
+        {
+            if (bs.Length < p + Constants.OBJECT_ID_LENGTH)
+            {
+                throw new ArgumentException("byte buf not long enough");
+            }
 
-        /// <summary>Convert an ObjectId from raw binary representation.</summary>
-        /// <remarks>Convert an ObjectId from raw binary representation.</remarks>
-        /// <param name="is">
-        /// the raw integers buffer to read from. At least 5 integers must
-        /// be available within this int array.
-        /// </param>
-        /// <returns>the converted object id.</returns>
-        //public static NGit.ObjectId FromRaw(int[] @is)
-        //{
-        //	return FromRaw(@is, 0);
-        //}
-
-        /// <summary>Convert an ObjectId from raw binary representation.</summary>
-        /// <remarks>Convert an ObjectId from raw binary representation.</remarks>
-        /// <param name="is">
-        /// the raw integers buffer to read from. At least 5 integers
-        /// after p must be available within this int array.
-        /// </param>
-        /// <param name="p">position to read the first integer of data from.</param>
-        /// <returns>the converted object id.</returns>
-        //public static NGit.ObjectId FromRaw(int[] @is, int p)
-        //{
-        //	return new NGit.ObjectId(@is[p], @is[p + 1], @is[p + 2], @is[p + 3], @is[p + 4]);
-        //}
+            return new ObjectId(bs.Skip(p).Take(Constants.OBJECT_ID_LENGTH).ToArray());
+        }
 
         /// <summary>Convert an ObjectId from hex characters (US-ASCII).</summary>
         /// <remarks>Convert an ObjectId from hex characters (US-ASCII).</remarks>
@@ -211,10 +187,18 @@ namespace NGit
         /// </param>
         /// <param name="offset">position to read the first character from.</param>
         /// <returns>the converted object id.</returns>
-        //public static NGit.ObjectId FromString(byte[] buf, int offset)
-        //{
-        //	return FromHexString(buf, offset);
-        //}
+        public static NGit.ObjectId FromString(byte[] buf, int offset)
+        {
+            if (buf.Length - offset < Constants.OBJECT_ID_STRING_LENGTH)
+            {
+                throw new ArgumentException("Byte buf not long enough");
+            }
+            byte[] b = Enumerable.Range(offset, offset + Constants.OBJECT_ID_STRING_LENGTH)
+                .Where(x => x % 2 == 0)
+                .Select(x => Convert.ToByte(Encoding.ASCII.GetString(buf.Skip(x).Take(2).ToArray()), 16))
+                .ToArray();
+            return new ObjectId(b);
+        }
 
         /// <summary>Convert an ObjectId from hex characters.</summary>
         /// <remarks>Convert an ObjectId from hex characters.</remarks>
@@ -232,23 +216,6 @@ namespace NGit
                 .ToArray();
             return new ObjectId(b);
         }
-
-        //private static NGit.ObjectId FromHexString(byte[] bs, int p)
-        //{
-        //	try
-        //	{
-        //		int a = RawParseUtils.ParseHexInt32(bs, p);
-        //		int b = RawParseUtils.ParseHexInt32(bs, p + 8);
-        //		int c = RawParseUtils.ParseHexInt32(bs, p + 16);
-        //		int d = RawParseUtils.ParseHexInt32(bs, p + 24);
-        //		int e = RawParseUtils.ParseHexInt32(bs, p + 32);
-        //		return new NGit.ObjectId(a, b, c, d, e);
-        //	}
-        //	catch (IndexOutOfRangeException)
-        //	{
-        //		throw new InvalidObjectIdException(bs, p, Constants.OBJECT_ID_STRING_LENGTH);
-        //	}
-        //}
 
         internal ObjectId(byte[] bytes)
         {
